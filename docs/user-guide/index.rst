@@ -23,6 +23,7 @@ Advanced Topics
 
     data_types
     performance
+    write_synchronization
     consolidated_metadata
     extending
     gpu

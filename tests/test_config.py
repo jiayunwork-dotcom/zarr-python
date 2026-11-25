@@ -54,6 +54,7 @@ def test_config_defaults_set() -> None:
                 "array": {
                     "order": "C",
                     "write_empty_chunks": False,
+                    "write_synchronized": False,
                 },
                 "async": {"concurrency": 10, "timeout": None},
                 "threading": {"max_workers": None},

@@ -1,0 +1,6 @@
+Add an opt-in ``write_synchronized`` runtime array configuration. When enabled, writes
+from array handles that share one ``Store`` instance and event loop are serialized per
+physical key (a chunk, or a whole shard when sharding is used), so concurrent partial
+updates of the same chunk can no longer overwrite one another. Different keys remain
+independent, and coordination state is reclaimed when keys are no longer in use. The
+setting is runtime-only and is never persisted in array metadata.

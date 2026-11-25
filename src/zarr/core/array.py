@@ -961,6 +961,7 @@ class AsyncArray(Generic[T_ArrayMetadata]):
         cls,
         store: StoreLike,
         zarr_format: ZarrFormat | None = 3,
+        config: ArrayConfigLike | None = None,
     ) -> AsyncArray[ArrayV3Metadata] | AsyncArray[ArrayV2Metadata]:
         """
         Async method to open an existing Zarr array from a given store.
@@ -971,6 +972,10 @@ class AsyncArray(Generic[T_ArrayMetadata]):
             The store containing the Zarr array.
         zarr_format : ZarrFormat | None, optional
             The Zarr format version (default is 3).
+        config : ArrayConfigLike, optional
+            The runtime configuration of the array. As with creation, the
+            ``array`` section of ``zarr.config`` supplies any setting that is not
+            given explicitly.
 
         Returns
         -------
@@ -988,7 +993,7 @@ class AsyncArray(Generic[T_ArrayMetadata]):
         metadata_dict = await get_array_metadata(store_path, zarr_format=zarr_format)
         # TODO: remove this cast when we have better type hints
         _metadata_dict = cast("ArrayV3MetadataDict", metadata_dict)
-        return cls(store_path=store_path, metadata=_metadata_dict)
+        return cls(store_path=store_path, metadata=_metadata_dict, config=config)
 
     @property
     def store(self) -> Store:
@@ -2229,6 +2234,8 @@ class Array:
     def open(
         cls,
         store: StoreLike,
+        zarr_format: ZarrFormat | None = 3,
+        config: ArrayConfigLike | None = None,
     ) -> Array:
         """Opens an existing Array from a store.
 
@@ -2236,13 +2243,18 @@ class Array:
         ----------
         store : StoreLike
             Store containing the Array.
+        zarr_format : ZarrFormat | None, optional
+            The Zarr format version (default is 3). Pass ``None`` to detect it.
+        config : ArrayConfigLike, optional
+            The runtime configuration of the array, e.g.
+            ``{"write_synchronized": True}``.
 
         Returns
         -------
         Array
             Array opened from the store.
         """
-        async_array = sync(AsyncArray.open(store))
+        async_array = sync(AsyncArray.open(store, zarr_format=zarr_format, config=config))
         return cls(async_array)
 
     @property

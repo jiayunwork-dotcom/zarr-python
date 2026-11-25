@@ -1277,8 +1277,12 @@ async def open_array(
     if "write_empty_chunks" in kwargs:
         _warn_write_empty_chunks_kwarg()
 
+    # For an already existing array the config keyword also determines runtime behavior,
+    # so it has to be forwarded to the open call (not only used when creating).
+    config = kwargs.pop("config", None)
+
     try:
-        return await AsyncArray.open(store_path, zarr_format=zarr_format)
+        return await AsyncArray.open(store_path, zarr_format=zarr_format, config=config)
     except FileNotFoundError as err:
         if not store_path.read_only and mode in _CREATE_MODES:
             overwrite = _infer_overwrite(mode)
@@ -1287,6 +1291,7 @@ async def open_array(
                 store=store_path,
                 zarr_format=_zarr_format,
                 overwrite=overwrite,
+                config=config,
                 **kwargs,
             )
         msg = f"No array found in store {store_path.store} at path {store_path.path}"

@@ -28,6 +28,7 @@ class ArrayConfigParams(TypedDict):
 
     order: NotRequired[MemoryOrder]
     write_empty_chunks: NotRequired[bool]
+    write_synchronized: NotRequired[bool]
 
 
 @dataclass(frozen=True)
@@ -41,17 +42,27 @@ class ArrayConfig:
         The memory layout of the arrays returned when reading data from the store.
     write_empty_chunks : bool
         If True, empty chunks will be written to the store.
+    write_synchronized : bool
+        If True, concurrent modifications of the same physical store key (a chunk, or a
+        whole shard when sharding is used) made through array handles that share a store
+        instance and run on the same event loop are serialized. This is a runtime-only
+        setting: it is never written to the array metadata.
     """
 
     order: MemoryOrder
     write_empty_chunks: bool
+    write_synchronized: bool = False
 
-    def __init__(self, order: MemoryOrder, write_empty_chunks: bool) -> None:
+    def __init__(
+        self, order: MemoryOrder, write_empty_chunks: bool, write_synchronized: bool = False
+    ) -> None:
         order_parsed = parse_order(order)
         write_empty_chunks_parsed = parse_bool(write_empty_chunks)
+        write_synchronized_parsed = parse_bool(write_synchronized)
 
         object.__setattr__(self, "order", order_parsed)
         object.__setattr__(self, "write_empty_chunks", write_empty_chunks_parsed)
+        object.__setattr__(self, "write_synchronized", write_synchronized_parsed)
 
     @classmethod
     def from_dict(cls, data: ArrayConfigParams) -> Self:
@@ -62,7 +73,9 @@ class ArrayConfig:
         """
         kwargs_out: ArrayConfigParams = {}
         for f in fields(ArrayConfig):
-            field_name = cast("Literal['order', 'write_empty_chunks']", f.name)
+            field_name = cast(
+                "Literal['order', 'write_empty_chunks', 'write_synchronized']", f.name
+            )
             if field_name not in data:
                 kwargs_out[field_name] = zarr_config.get(f"array.{field_name}")
             else:

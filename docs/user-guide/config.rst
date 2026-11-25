@@ -29,6 +29,8 @@ Configuration options include the following:
 - Default Zarr format ``default_zarr_version``
 - Default array order in memory ``array.order``
 - Whether empty chunks are written to storage ``array.write_empty_chunks``
+- Whether concurrent writes to the same chunk are coordinated ``array.write_synchronized``
+  (see :ref:`user-guide-write-synchronization`)
 - Async and threading options, e.g. ``async.concurrency`` and ``threading.max_workers``
 - Selections of implementations of codecs, codec pipelines and buffers
 - Enabling GPU support with ``zarr.config.enable_gpu()``. See :ref:`user-guide-gpu` for more.
@@ -41,7 +43,9 @@ requires the value of ``codecs.bytes.name`` to be ``'custompackage.NewBytesCodec
 This is the current default configuration::
 
    >>> zarr.config.pprint()
-   {'array': {'order': 'C', 'write_empty_chunks': False},
+   {'array': {'order': 'C',
+              'write_empty_chunks': False,
+              'write_synchronized': False},
     'async': {'concurrency': 10, 'timeout': None},
     'buffer': 'zarr.buffer.cpu.Buffer',
     'codec_pipeline': {'batch_size': 1,
